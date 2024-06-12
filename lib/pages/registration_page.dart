@@ -1,12 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class RegistrationPage extends StatelessWidget {
+class RegistrationPage extends StatefulWidget {
+  @override
+  _RegistrationPageState createState() => _RegistrationPageState();
+}
+
+class _RegistrationPageState extends State<RegistrationPage> {
   final _nameController = TextEditingController();
   final _surnameController = TextEditingController();
   final _addressController = TextEditingController();
-  final _birthdayController = TextEditingController();
+  final _birthdateController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _registerUser() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    const url = 'http://localhost:3002/api/register';
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'name': _nameController.text,
+        'surname': _surnameController.text,
+        'address': _addressController.text,
+        'birthdate': _birthdateController.text,
+        'email': _emailController.text,
+        'password': _passwordController.text,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      print("Registration successful!");
+      Navigator.pushNamed(
+        context,
+        '/login',
+      );
+    } else {
+      print("Registration failed.");
+      print("Status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
+      // Handle error
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,9 +119,9 @@ class RegistrationPage extends StatelessWidget {
                   ),
                   SizedBox(height: 16),
                   TextField(
-                    controller: _birthdayController,
+                    controller: _birthdateController,
                     decoration: InputDecoration(
-                      labelText: 'Birthday',
+                      labelText: 'Birthdate',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -105,19 +150,19 @@ class RegistrationPage extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Implement registration logic
-                    },
-                    child: Text('Register'),
-                    style: ElevatedButton.styleFrom(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
+                  _isLoading
+                      ? CircularProgressIndicator()
+                      : ElevatedButton(
+                          onPressed: _registerUser,
+                          child: Text('Register'),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
                   SizedBox(height: 16),
                   TextButton(
                     onPressed: () {
