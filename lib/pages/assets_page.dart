@@ -31,7 +31,7 @@ class _AssetsPageState extends State<AssetsPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Asset Details'),
-          content: Text('Detalhes da ação $symbol serão mostrado aqui.'),
+          content: Text('Detalhes da ação $symbol serão mostrados aqui.'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
