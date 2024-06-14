@@ -18,13 +18,13 @@ class AlertCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
       ),
       elevation: 2.0,
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
             Expanded(
@@ -33,10 +33,11 @@ class AlertCard extends StatelessWidget {
                 children: [
                   Text(
                     symbol,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   Text(companyName),
-                  SizedBox(height: 8.0),
+                  const SizedBox(height: 8.0),
                   Text('QNTY ${quantity.toStringAsFixed(2)}'),
                 ],
               ),
@@ -46,16 +47,16 @@ class AlertCard extends StatelessWidget {
               children: [
                 Text(
                   'CURRENT PRICE \$${currentPrice.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 Text(
                   'TARGET PRICE \$${targetPrice.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ],
             ),
-            SizedBox(width: 16.0),
-            Icon(Icons.visibility),
+            const SizedBox(width: 16.0),
+            const Icon(Icons.visibility),
           ],
         ),
       ),

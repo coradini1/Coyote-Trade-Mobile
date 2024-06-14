@@ -27,7 +27,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchUserData() async {
-    final url = 'http://localhost:3002/api/user/mobile';
+    setState(() {});
+    const url = 'http://localhost:3002/api/user/mobile';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -40,16 +41,32 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           username = "${user['name']} ${user['surname']}";
         });
-      } else {
-        // Handle error
-      }
+      } else {}
     } catch (error) {
-      // Handle error
+      final alert = error.toString();
+      AlertDialog warning = AlertDialog(
+        title: const Text("Error"),
+        content: Text(alert),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("OK"),
+          ),
+        ],
+      );
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return warning;
+        },
+      );
     }
   }
 
   Future<void> fetchAlerts() async {
-    final url = 'http://localhost:3002/api/alerts';
+    const url = 'http://localhost:3002/api/alerts';
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -64,21 +81,17 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _logout(BuildContext context) async {
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Manage Your Alerts'),
+        title: const Text('Manage Your Alerts'),
       ),
-      drawer: DrawerWidget(username: username),
+      drawer: DrawerWidget(token: widget.token, username: username),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               itemCount: alerts.length,
               itemBuilder: (context, index) {
                 final alert = alerts[index];

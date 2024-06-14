@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class DrawerWidget extends StatelessWidget {
   final String username;
+  final String token;
 
-  DrawerWidget({required this.username});
+  DrawerWidget({required this.token, required this.username});
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -11,7 +12,7 @@ class DrawerWidget extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.blue,
             ),
             child: Column(
@@ -19,33 +20,35 @@ class DrawerWidget extends StatelessWidget {
               children: [
                 Text(
                   'Welcome, $username',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 ElevatedButton(
                   onPressed: () {
                     _logout(context);
                   },
-                  child: Text('Log Out'),
+                  child: const Text('Log Out'),
                 ),
               ],
             ),
           ),
           ListTile(
-            leading: Icon(Icons.home),
-            title: Text('Home'),
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.pushNamed(context, '/home', arguments: token);
             },
           ),
           ListTile(
-            leading: Icon(Icons.account_balance_wallet),
-            title: Text('Assets'),
+            leading: const Icon(Icons.account_balance_wallet),
+            title: const Text('Assets'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.pushNamed(context, '/assets', arguments: token);
             },
           ),
         ],
@@ -53,13 +56,7 @@ class DrawerWidget extends StatelessWidget {
     );
   }
 
-  // Function to handle logout
   void _logout(BuildContext context) {
-    // Print the context for debugging
-    print("Logout context: $context");
-
-    // Perform any logout actions here, such as clearing user data, etc.
-    // After that, navigate back to the login page or any other initial page.
     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 }

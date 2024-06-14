@@ -33,10 +33,8 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (response.statusCode == 200) {
-        print(response.body);
         final data = json.decode(response.body);
         final token = data['token'];
-        print(token);
         Navigator.pushNamed(
           context,
           '/home',
@@ -63,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: Text('Login'),
+        title: const Text('Login'),
       ),
       body: Center(
         child: Padding(
@@ -77,22 +75,22 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  SizedBox(height: 16),
-                  Text(
+                  const SizedBox(height: 16),
+                  const Text(
                     'CoyoteTrading',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 16),
-                  Text(
+                  const SizedBox(height: 16),
+                  const Text(
                     'Access your account',
                     style: TextStyle(
                       fontSize: 20,
                     ),
                   ),
-                  SizedBox(height: 32),
+                  const SizedBox(height: 32),
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -102,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: _passwordController,
                     obscureText: true,
@@ -111,10 +109,10 @@ class _LoginPageState extends State<LoginPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      suffixIcon: Icon(Icons.visibility_off),
+                      suffixIcon: const Icon(Icons.visibility_off),
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Row(
                     children: <Widget>[
                       Checkbox(
@@ -125,13 +123,11 @@ class _LoginPageState extends State<LoginPage> {
                           });
                         },
                       ),
-                      Text('Remember'),
-                      Spacer(),
+                      const Text('Remember'),
+                      const Spacer(),
                       TextButton(
-                        onPressed: () {
-                          // Add functionality for forgot password
-                        },
-                        child: Text('Forgot your password?'),
+                        onPressed: () {},
+                        child: const Text('Forgot your password?'),
                       ),
                     ],
                   ),
@@ -140,31 +136,31 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: Text(
                         _errorMessage,
-                        style: TextStyle(color: Colors.red),
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   _isLoading
-                      ? CircularProgressIndicator()
+                      ? const CircularProgressIndicator()
                       : ElevatedButton(
                           onPressed: _login,
                           child: Text('Log in'),
                           style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 horizontal: 32, vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
                         ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   TextButton(
                     onPressed: () {
                       Navigator.pushNamed(context, '/register');
                     },
-                    child: Text('New here? Create an account'),
+                    child: const Text('New here? Create an account'),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
