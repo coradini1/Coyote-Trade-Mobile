@@ -34,9 +34,11 @@ class AssetItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    symbol,
+                    symbol.isNotEmpty ? symbol : 'Unknown Symbol',
                     style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text('QNTY ${quantity.toStringAsFixed(2)}'),
                 ],
@@ -52,14 +54,16 @@ class AssetItem extends StatelessWidget {
                 Text(
                   'CHANGE \$${change.toStringAsFixed(2)}',
                   style: TextStyle(
-                      fontSize: 16,
-                      color: change >= 0 ? Colors.green : Colors.red),
+                    fontSize: 16,
+                    color: change >= 0 ? Colors.green : Colors.red,
+                  ),
                 ),
                 Text(
                   '(${changePercentage.toStringAsFixed(2)}%)',
                   style: TextStyle(
-                      fontSize: 12,
-                      color: change >= 0 ? Colors.green : Colors.red),
+                    fontSize: 12,
+                    color: change >= 0 ? Colors.green : Colors.red,
+                  ),
                 ),
               ],
             ),

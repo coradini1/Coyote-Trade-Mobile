@@ -7,8 +7,9 @@ import '../widgets/drawer.dart';
 
 class HomePage extends StatefulWidget {
   final String token;
+  final Map<String, dynamic>? newAlert;
 
-  HomePage({Key? key, required this.token}) : super(key: key);
+  HomePage({Key? key, required this.token, this.newAlert}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -24,6 +25,23 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     fetchUserData();
     fetchAlerts();
+    if (widget.newAlert != null) {
+      _addOrUpdateAlert(widget.newAlert!);
+    }
+  }
+
+  void _addOrUpdateAlert(Map<String, dynamic> newAlert) {
+    final existingIndex =
+        alerts.indexWhere((alert) => alert['symbol'] == newAlert['symbol']);
+    if (existingIndex >= 0) {
+      setState(() {
+        alerts[existingIndex] = newAlert;
+      });
+    } else {
+      setState(() {
+        alerts.add(newAlert);
+      });
+    }
   }
 
   Future<void> fetchUserData() async {
