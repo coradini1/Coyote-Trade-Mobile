@@ -5,6 +5,7 @@ class DrawerWidget extends StatelessWidget {
   final String token;
 
   DrawerWidget({required this.token, required this.username});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(

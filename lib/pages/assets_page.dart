@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../widgets/drawer.dart';
 import '../widgets/asset_item.dart';
-import 'home_page.dart';
 
 class AssetsPage extends StatefulWidget {
   final String token;
@@ -74,7 +73,35 @@ class _AssetsPageState extends State<AssetsPage> {
     }
   }
 
-  void _showAssetDetails(String symbol, double quantity, double value) {
+  Future<void> createAlert(
+      int assetId, String symbol, double targetPrice) async {
+    const url = 'http://localhost:3002/api/alerts/create';
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'assetId': assetId,
+          'assetSymbol': symbol,
+          'targetPrice': targetPrice,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Alert created successfully');
+      } else {
+        throw Exception('Failed to create alert');
+      }
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  void _showAssetDetails(
+      int assetId, String symbol, dynamic quantity, dynamic value) {
     final TextEditingController targetPriceController = TextEditingController();
 
     showDialog(
@@ -170,23 +197,28 @@ class _AssetsPageState extends State<AssetsPage> {
                     double? targetPrice =
                         double.tryParse(targetPriceController.text);
                     if (targetPrice != null) {
+                      createAlert(assetId, symbol, targetPrice);
                       Navigator.of(context).pop();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HomePage(
-                            token: widget.token,
-                            newAlert: {
-                              'symbol': symbol,
-                              'companyName': 'NVIDIA',
-                              'quantity': quantity,
-                              'currentPrice': value,
-                              'targetPrice': targetPrice,
-                            },
-                          ),
-                        ),
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Invalid Price'),
+                            content: const Text(
+                                'Please enter a valid target price.'),
+                            actions: [
+                              TextButton(
+                                child: const Text('OK'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
                       );
-                    } else {}
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: Size(double.infinity, 36),
@@ -230,56 +262,34 @@ class _AssetsPageState extends State<AssetsPage> {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    "Assets",
+                    "Your Assets",
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 16),
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 5,
-                            blurRadius: 7,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ListView.builder(
-                          itemCount: assets.length,
-                          itemBuilder: (context, index) {
-                            final asset = assets[index];
-                            if (asset["asset_symbol"] != null &&
-                                asset["quantity"] != null &&
-                                asset["buy_price"] != null) {
-                              return AssetItem(
-                                symbol: asset["asset_symbol"],
-                                quantity: asset["quantity"].toDouble(),
-                                value: asset["buy_price"].toDouble(),
-                                change: 0,
-                                changePercentage: 0,
-                                onTapDetails: () {
-                                  _showAssetDetails(
-                                    asset["asset_symbol"],
-                                    asset["quantity"].toDouble(),
-                                    asset["buy_price"].toDouble(),
-                                  );
-                                },
-                              );
-                            } else {
-                              return SizedBox();
-                            }
+                    child: ListView.builder(
+                      itemCount: assets.length,
+                      itemBuilder: (context, index) {
+                        final asset = assets[index];
+                        return AssetItem(
+                          assetId: asset['id'],
+                          symbol: asset['asset_symbol'],
+                          quantity: asset['quantity'],
+                          value: asset['buy_price'],
+                          change: 0,
+                          changePercentage: 0,
+                          onTapDetails: () {
+                            _showAssetDetails(
+                              asset['id'],
+                              asset['asset_symbol'],
+                              asset['quantity'],
+                              asset['buy_price'],
+                            );
                           },
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ],

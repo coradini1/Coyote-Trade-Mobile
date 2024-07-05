@@ -3,16 +3,19 @@ import 'package:flutter/material.dart';
 class AlertCard extends StatelessWidget {
   final String symbol;
   final String companyName;
-  final double quantity;
-  final double currentPrice;
-  final double targetPrice;
+  final dynamic quantity;
+  final dynamic currentPrice;
+  final dynamic targetPrice;
+  final VoidCallback onTapDetails;
 
-  AlertCard({
+  const AlertCard({
+    super.key,
     required this.symbol,
     required this.companyName,
     required this.quantity,
     required this.currentPrice,
     required this.targetPrice,
+    required this.onTapDetails,
   });
 
   @override
@@ -38,7 +41,7 @@ class AlertCard extends StatelessWidget {
                   ),
                   Text(companyName),
                   const SizedBox(height: 8.0),
-                  Text('QNTY ${quantity.toStringAsFixed(2)}'),
+                  Text('QNTY ${quantity?.toStringAsFixed(2) ?? '0.00'}'),
                 ],
               ),
             ),
@@ -46,17 +49,20 @@ class AlertCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  'CURRENT PRICE \$${currentPrice.toStringAsFixed(2)}',
+                  'CURRENT PRICE \$${currentPrice?.toStringAsFixed(2) ?? '0.00'}',
                   style: const TextStyle(fontSize: 16),
                 ),
                 Text(
-                  'TARGET PRICE \$${targetPrice.toStringAsFixed(2)}',
+                  'TARGET PRICE \$${targetPrice?.toStringAsFixed(2) ?? '0.00'}',
                   style: const TextStyle(fontSize: 16),
                 ),
               ],
             ),
             const SizedBox(width: 16.0),
-            const Icon(Icons.visibility),
+            GestureDetector(
+              onTap: onTapDetails,
+              child: const Icon(Icons.visibility),
+            ),
           ],
         ),
       ),
