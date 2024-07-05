@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../widgets/alert_card.dart';
 import '../widgets/drawer.dart';
 
@@ -9,11 +11,16 @@ class HomePage extends StatefulWidget {
   final String token;
   final Map<String, dynamic>? newAlert;
 
-  HomePage({Key? key, required this.token, this.newAlert}) : super(key: key);
+  const HomePage({Key? key, required this.token, this.newAlert})
+      : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _HomePageState createState() => _HomePageState();
 }
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 class _HomePageState extends State<HomePage> {
   List<dynamic> alerts = [];
@@ -30,6 +37,48 @@ class _HomePageState extends State<HomePage> {
     if (widget.newAlert != null) {
       _addOrUpdateAlert(widget.newAlert!);
     }
+    _initializeNotifications();
+    Timer.periodic(const Duration(minutes: 1), (timer) {
+      fetchAlerts();
+    });
+  }
+
+  void _initializeNotifications() async {
+    const IOSInitializationSettings initializationSettingsIOS =
+        IOSInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+      iOS: initializationSettingsIOS,
+    );
+
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onSelectNotification: (String? payload) async {
+        if (payload != null) {
+          debugPrint('notification payload: $payload');
+        }
+      },
+    );
+  }
+
+  void _showNotification(String symbol, double currentPrice) async {
+    const IOSNotificationDetails iOSPlatformChannelSpecifics =
+        IOSNotificationDetails();
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      iOS: iOSPlatformChannelSpecifics,
+    );
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Price Alert Hit 🚀',
+      '$symbol at \$$currentPrice',
+      platformChannelSpecifics,
+      payload: 'item x',
+    );
   }
 
   void _addOrUpdateAlert(Map<String, dynamic> newAlert) {
@@ -46,6 +95,24 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> deleteAlert(int assetId) async {
+    final url = 'http://localhost:3002/api/alerts/delete/$assetId';
+    try {
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+
+      if (response.statusCode == 200) {
+        await fetchAlerts();
+      } else {
+        throw Exception('Failed to delete alert');
+      }
+    } catch (error) {
+      _showErrorDialog(error.toString());
+    }
+  }
+
   Future<void> fetchAssets() async {
     const url = 'http://localhost:3002/api/assets/all';
     try {
@@ -59,34 +126,16 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           assets = data['data'] ?? [];
         });
-        print('Assets: $assets');
       } else {
         throw Exception('Failed to load assets');
       }
     } catch (error) {
-      final alert = error.toString();
-      AlertDialog warning = AlertDialog(
-        title: const Text("Error"),
-        content: Text(alert),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("OK"),
-          ),
-        ],
-      );
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return warning;
-        },
-      );
+      _showErrorDialog(error.toString());
     }
   }
 
-  Future<void> UpdateAlert(String symbol, double targetPrice) async {
+  // ignore: non_constant_identifier_names
+  void UpdateAlert(String symbol, double targetPrice) async {
     final asset = assets.firstWhere((asset) => asset['asset_symbol'] == symbol,
         orElse: () => null);
     if (asset == null) {
@@ -109,35 +158,17 @@ class _HomePageState extends State<HomePage> {
         }),
       );
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        _addOrUpdateAlert(data['data']);
+        await fetchAlerts();
       } else {
         throw Exception('Failed to update alert');
       }
     } catch (error) {
-      final alert = error.toString();
-      AlertDialog warning = AlertDialog(
-        title: const Text("Error"),
-        content: Text(alert),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("OK"),
-          ),
-        ],
-      );
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return warning;
-        },
-      );
+      _showErrorDialog(error.toString());
     }
   }
 
-  void _showAssetDetails(String symbol, dynamic quantity, dynamic value) {
+  void _showAssetDetails(
+      String symbol, dynamic quantity, dynamic value, int assetId) {
     final TextEditingController targetPriceController = TextEditingController();
 
     showDialog(
@@ -236,46 +267,30 @@ class _HomePageState extends State<HomePage> {
                       UpdateAlert(symbol, targetPrice);
                       Navigator.of(context).pop();
                     } else {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Invalid Price'),
-                            content: const Text(
-                                'Please enter a valid target price.'),
-                            actions: [
-                              TextButton(
-                                child: const Text('OK'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
+                      _showErrorDialog('Please enter a valid target price.');
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 36),
+                    minimumSize: const Size(double.infinity, 36),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text('UPDATE'),
+                  child: const Text('UPDATE'),
                 ),
                 ElevatedButton(
                   onPressed: () {
+                    deleteAlert(assetId);
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 36),
+                    minimumSize: const Size(double.infinity, 36),
                     backgroundColor: Colors.red,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text('DELETE'),
+                  child: const Text('DELETE'),
                 ),
               ],
             ),
@@ -286,7 +301,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchUserData() async {
-    setState(() {});
     const url = 'http://localhost:3002/api/user/mobile';
     try {
       final response = await http.get(
@@ -300,27 +314,11 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           username = "${user['name']} ${user['surname']}";
         });
-      } else {}
+      } else {
+        throw Exception('Failed to load user data');
+      }
     } catch (error) {
-      final alert = error.toString();
-      AlertDialog warning = AlertDialog(
-        title: const Text("Error"),
-        content: Text(alert),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("OK"),
-          ),
-        ],
-      );
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return warning;
-        },
-      );
+      _showErrorDialog(error.toString());
     }
   }
 
@@ -331,38 +329,53 @@ class _HomePageState extends State<HomePage> {
         Uri.parse(url),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
-      print(response.body);
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print(data);
         setState(() {
-          alerts = data['data'] ?? [];
+          alerts = (data['data'] as List<dynamic>)
+              .map((alert) => {
+                    ...alert,
+                    'currentPrice': (alert['currentPrice'] ?? 0).toDouble(),
+                    'asset_id': alert['asset_id'],
+                  })
+              .toList();
           isLoading = false;
         });
+
+        for (var alert in alerts) {
+          final currentPrice = (alert['currentPrice'] ?? 0).toDouble();
+          if (currentPrice >= alert['target_price']) {
+            _showNotification(alert['asset_symbol'], currentPrice);
+          }
+        }
       } else {
         throw Exception('Failed to load alerts');
       }
     } catch (error) {
-      final alert = error.toString();
-      AlertDialog warning = AlertDialog(
-        title: const Text("Error"),
-        content: Text(alert),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("OK"),
-          ),
-        ],
-      );
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return warning;
-        },
-      );
+      _showErrorDialog(error.toString());
     }
+  }
+
+  void _showErrorDialog(String errorMessage) {
+    AlertDialog warning = AlertDialog(
+      title: const Text("Error"),
+      content: Text(errorMessage),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text("OK"),
+        ),
+      ],
+    );
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return warning;
+      },
+    );
   }
 
   @override
@@ -390,6 +403,7 @@ class _HomePageState extends State<HomePage> {
                       alert['asset_symbol'],
                       alert['quantity'],
                       alert['currentPrice'],
+                      alert['id'],
                     );
                   },
                 );

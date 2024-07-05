@@ -4,7 +4,7 @@ class DrawerWidget extends StatelessWidget {
   final String username;
   final String token;
 
-  DrawerWidget({required this.token, required this.username});
+  const DrawerWidget({super.key, required this.token, required this.username});
 
   @override
   Widget build(BuildContext context) {

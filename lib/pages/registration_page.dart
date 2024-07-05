@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class RegistrationPage extends StatefulWidget {
+  const RegistrationPage({super.key});
+
   @override
   _RegistrationPageState createState() => _RegistrationPageState();
 }
@@ -154,7 +156,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       ? const CircularProgressIndicator()
                       : ElevatedButton(
                           onPressed: _registerUser,
-                          child: Text('Register'),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 32, vertical: 12),
@@ -162,6 +163,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
+                          child: Text('Register'),
                         ),
                   const SizedBox(height: 16),
                   TextButton(

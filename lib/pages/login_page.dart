@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -164,7 +166,6 @@ class _LoginPageState extends State<LoginPage> {
                       ? const CircularProgressIndicator()
                       : ElevatedButton(
                           onPressed: _login,
-                          child: Text('Log in'),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 32, vertical: 12),
@@ -172,6 +173,7 @@ class _LoginPageState extends State<LoginPage> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
+                          child: Text('Log in'),
                         ),
                   const SizedBox(height: 16),
                   TextButton(

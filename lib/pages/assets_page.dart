@@ -74,7 +74,7 @@ class _AssetsPageState extends State<AssetsPage> {
   }
 
   Future<void> createAlert(
-      int assetId, String symbol, double targetPrice) async {
+      int assetId, String symbol, dynamic targetPrice) async {
     const url = 'http://localhost:3002/api/alerts/create';
     try {
       final response = await http.post(
@@ -194,7 +194,7 @@ class _AssetsPageState extends State<AssetsPage> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
-                    double? targetPrice =
+                    dynamic targetPrice =
                         double.tryParse(targetPriceController.text);
                     if (targetPrice != null) {
                       createAlert(assetId, symbol, targetPrice);
@@ -221,12 +221,12 @@ class _AssetsPageState extends State<AssetsPage> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 36),
+                    minimumSize: const Size(double.infinity, 36),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text('CREATE'),
+                  child: const Text('CREATE'),
                 ),
               ],
             ),

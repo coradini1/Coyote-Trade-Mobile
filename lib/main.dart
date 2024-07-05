@@ -5,10 +5,12 @@ import 'pages/registration_page.dart';
 import 'pages/assets_page.dart';
 
 void main() async {
-  runApp(CoyoteTradingApp());
+  runApp(const CoyoteTradingApp());
 }
 
 class CoyoteTradingApp extends StatelessWidget {
+  const CoyoteTradingApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
