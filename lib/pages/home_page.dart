@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -15,7 +14,6 @@ class HomePage extends StatefulWidget {
       : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _HomePageState createState() => _HomePageState();
 }
 
@@ -38,7 +36,7 @@ class _HomePageState extends State<HomePage> {
       _addOrUpdateAlert(widget.newAlert!);
     }
     _initializeNotifications();
-    Timer.periodic(const Duration(minutes: 1), (timer) {
+    Timer.periodic(const Duration(seconds: 10), (timer) {
       fetchAlerts();
     });
   }
@@ -66,7 +64,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showNotification(String symbol, double currentPrice) async {
+  void _showNotification(
+      String symbol, double currentPrice, String message) async {
     const IOSNotificationDetails iOSPlatformChannelSpecifics =
         IOSNotificationDetails();
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
@@ -74,8 +73,8 @@ class _HomePageState extends State<HomePage> {
     );
     await flutterLocalNotificationsPlugin.show(
       0,
-      'Price Alert Hit 🚀',
-      '$symbol at \$$currentPrice',
+      'Price Alert 🚀',
+      '$symbol $message at \$$currentPrice',
       platformChannelSpecifics,
       payload: 'item x',
     );
@@ -96,7 +95,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> deleteAlert(int assetId) async {
-    final url = 'http://localhost:3002/api/alerts/delete/$assetId';
+    final url = 'http://192.168.0.8:3002/api/alerts/delete/$assetId';
     try {
       final response = await http.delete(
         Uri.parse(url),
@@ -114,7 +113,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchAssets() async {
-    const url = 'http://localhost:3002/api/assets/all';
+    const url = 'http://192.168.0.8:3002/api/assets/all';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -134,8 +133,8 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // ignore: non_constant_identifier_names
-  void UpdateAlert(String symbol, double targetPrice) async {
+  void UpdateAlert(
+      String symbol, double targetPrice, double lowerThreshold) async {
     final asset = assets.firstWhere((asset) => asset['asset_symbol'] == symbol,
         orElse: () => null);
     if (asset == null) {
@@ -143,7 +142,7 @@ class _HomePageState extends State<HomePage> {
     }
     final assetId = asset['id'];
 
-    const url = 'http://localhost:3002/api/alerts/update';
+    const url = 'http://192.168.0.8:3002/api/alerts/update';
     try {
       final response = await http.put(
         Uri.parse(url),
@@ -155,6 +154,7 @@ class _HomePageState extends State<HomePage> {
           'asset_id': assetId,
           'symbol': symbol,
           'target_price': targetPrice,
+          'lower_threshold': lowerThreshold,
         }),
       );
       if (response.statusCode == 200) {
@@ -168,131 +168,167 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showAssetDetails(
-      String symbol, dynamic quantity, dynamic value, int assetId) {
+    String symbol,
+    dynamic quantity,
+    dynamic value,
+    int assetId,
+  ) {
     final TextEditingController targetPriceController = TextEditingController();
+    final TextEditingController lowerThresholdController =
+        TextEditingController();
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          titlePadding: EdgeInsets.zero,
-          contentPadding: EdgeInsets.zero,
-          content: Container(
-            width: double.maxFinite,
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          symbol,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: SingleChildScrollView(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            symbol,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Text(
+                            'Company Name',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'QNTY ${quantity.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'CURRENT PRICE',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '\$${value.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'HIGH TARGET PRICE',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: targetPriceController,
+                    decoration: const InputDecoration(
+                      hintText: 'PRICE ALERT',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'LOWER TARGET PRICE',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: lowerThresholdController,
+                    decoration: const InputDecoration(
+                      hintText: 'PRICE ALERT',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          double? targetPrice =
+                              double.tryParse(targetPriceController.text);
+                          double? lowerThreshold =
+                              double.tryParse(lowerThresholdController.text);
+                          if (targetPrice != null && lowerThreshold != null) {
+                            UpdateAlert(symbol, targetPrice, lowerThreshold);
+                            Navigator.of(context).pop();
+                          } else {
+                            _showErrorDialog('Please enter valid prices.');
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(100, 36),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        const Text(
-                          'Company Name',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey,
+                        child: const Text('UPDATE'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          deleteAlert(assetId);
+                          Navigator.of(context).pop();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(100, 36),
+                          backgroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'QNTY ${quantity.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'CURRENT PRICE',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
+                        child: const Text('DELETE'),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '\$${value.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'TARGET ALERT PRICE',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: targetPriceController,
-                  decoration: const InputDecoration(
-                    hintText: 'PRICE ALERT',
-                    contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    double? targetPrice =
-                        double.tryParse(targetPriceController.text);
-                    if (targetPrice != null) {
-                      UpdateAlert(symbol, targetPrice);
-                      Navigator.of(context).pop();
-                    } else {
-                      _showErrorDialog('Please enter a valid target price.');
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 36),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text('UPDATE'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    deleteAlert(assetId);
-                    Navigator.of(context).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 36),
-                    backgroundColor: Colors.red,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text('DELETE'),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -301,7 +337,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchUserData() async {
-    const url = 'http://localhost:3002/api/user/mobile';
+    const url = 'http://192.168.0.8:3002/api/user/mobile';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -323,7 +359,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchAlerts() async {
-    const url = 'http://localhost:3002/api/alerts/all';
+    const url = 'http://192.168.0.8:3002/api/alerts/all';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -346,7 +382,11 @@ class _HomePageState extends State<HomePage> {
         for (var alert in alerts) {
           final currentPrice = (alert['currentPrice'] ?? 0).toDouble();
           if (currentPrice >= alert['target_price']) {
-            _showNotification(alert['asset_symbol'], currentPrice);
+            _showNotification(
+                alert['asset_symbol'], currentPrice, "hit the target price");
+          } else if (currentPrice <= alert['lower_threshold']) {
+            _showNotification(alert['asset_symbol'], currentPrice,
+                "dropped below the threshold");
           }
         }
       } else {
@@ -357,23 +397,22 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _showErrorDialog(String errorMessage) {
-    AlertDialog warning = AlertDialog(
-      title: const Text("Error"),
-      content: Text(errorMessage),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text("OK"),
-        ),
-      ],
-    );
+  void _showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return warning;
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
       },
     );
   }
@@ -385,30 +424,37 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Manage Your Alerts'),
       ),
       drawer: DrawerWidget(token: widget.token, username: username),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: alerts.length,
-              itemBuilder: (context, index) {
-                final alert = alerts[index];
-                return AlertCard(
-                  symbol: alert['asset_symbol'] ?? '',
-                  companyName: alert['companyName'] ?? '',
-                  quantity: alert['quantity'] ?? 0,
-                  currentPrice: alert['currentPrice'] ?? 0,
-                  targetPrice: alert['target_price'] ?? 0,
-                  onTapDetails: () {
-                    _showAssetDetails(
-                      alert['asset_symbol'],
-                      alert['quantity'],
-                      alert['currentPrice'],
-                      alert['id'],
-                    );
-                  },
-                );
-              },
-            ),
+      body: RefreshIndicator(
+        onRefresh: fetchAlerts,
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView.builder(
+                padding: const EdgeInsets.all(8.0),
+                itemCount: alerts.length,
+                itemBuilder: (context, index) {
+                  final alert = alerts[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: AlertCard(
+                      symbol: alert['asset_symbol'] ?? '',
+                      companyName: alert['companyName'] ?? '',
+                      quantity: alert['quantity'] ?? 0,
+                      currentPrice: alert['currentPrice'] ?? 0,
+                      targetPrice: alert['target_price'] ?? 0,
+                      lowerThreshold: alert['lower_threshold'] ?? 0,
+                      onTapDetails: () {
+                        _showAssetDetails(
+                          alert['asset_symbol'],
+                          alert['quantity'],
+                          alert['currentPrice'],
+                          alert['id'],
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

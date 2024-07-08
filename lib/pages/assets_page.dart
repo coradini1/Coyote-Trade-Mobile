@@ -26,7 +26,7 @@ class _AssetsPageState extends State<AssetsPage> {
   }
 
   Future<void> getAssetsData() async {
-    const url = 'http://localhost:3002/api/assets/all';
+    const url = 'http://192.168.0.8:3002/api/assets/all';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -48,7 +48,7 @@ class _AssetsPageState extends State<AssetsPage> {
   }
 
   Future<void> fetchUserData() async {
-    const url = 'http://localhost:3002/api/user/mobile';
+    const url = 'http://192.168.0.8:3002/api/user/mobile';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -73,9 +73,9 @@ class _AssetsPageState extends State<AssetsPage> {
     }
   }
 
-  Future<void> createAlert(
-      int assetId, String symbol, dynamic targetPrice) async {
-    const url = 'http://localhost:3002/api/alerts/create';
+  Future<void> createAlert(int assetId, String symbol, dynamic targetPrice,
+      dynamic lowerThreshold) async {
+    const url = 'http://192.168.0.8:3002/api/alerts/create';
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -87,6 +87,7 @@ class _AssetsPageState extends State<AssetsPage> {
           'assetId': assetId,
           'assetSymbol': symbol,
           'targetPrice': targetPrice,
+          'lowerThreshold': lowerThreshold,
         }),
       );
 
@@ -103,6 +104,8 @@ class _AssetsPageState extends State<AssetsPage> {
   void _showAssetDetails(
       int assetId, String symbol, dynamic quantity, dynamic value) {
     final TextEditingController targetPriceController = TextEditingController();
+    final TextEditingController lowerThresholdController =
+        TextEditingController();
 
     showDialog(
       context: context,
@@ -175,7 +178,7 @@ class _AssetsPageState extends State<AssetsPage> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'TARGET ALERT PRICE',
+                  'HIGH TARGET PRICE',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey,
@@ -192,12 +195,32 @@ class _AssetsPageState extends State<AssetsPage> {
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 16),
+                const Text(
+                  'LOWER THRESHOLD PRICE',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: lowerThresholdController,
+                  decoration: const InputDecoration(
+                    hintText: 'PRICE ALERT',
+                    contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                ),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
                     dynamic targetPrice =
                         double.tryParse(targetPriceController.text);
+                    dynamic lowerThreshold =
+                        double.tryParse(lowerThresholdController.text);
                     if (targetPrice != null) {
-                      createAlert(assetId, symbol, targetPrice);
+                      createAlert(assetId, symbol, targetPrice, lowerThreshold);
                       Navigator.of(context).pop();
                     } else {
                       showDialog(

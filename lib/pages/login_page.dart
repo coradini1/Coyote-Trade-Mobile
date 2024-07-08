@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     final email = _emailController.text;
     final password = _passwordController.text;
 
-    const url = 'http://localhost:3002/api/login/mobile';
+    const url = 'http://192.168.0.8:3002/api/login/mobile';
 
     try {
       final response = await http.post(
@@ -72,10 +72,10 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         title: const Text('Login'),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      body: SingleChildScrollView(
+        child: Center(
           child: Card(
+            margin: const EdgeInsets.all(24),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -136,20 +136,25 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 8),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Checkbox(
-                        value: _rememberMe,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _rememberMe = value ?? false;
-                          });
-                        },
+                      Row(
+                        children: <Widget>[
+                          Checkbox(
+                            value: _rememberMe,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _rememberMe = value ?? false;
+                              });
+                            },
+                          ),
+                          const SizedBox(),
+                          const Text('Remember'),
+                        ],
                       ),
-                      const Text('Remember'),
-                      const Spacer(),
                       TextButton(
                         onPressed: () {},
-                        child: const Text('Forgot your password?'),
+                        child: const Text('Forgot password'),
                       ),
                     ],
                   ),

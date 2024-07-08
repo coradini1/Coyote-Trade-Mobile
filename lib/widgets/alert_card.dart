@@ -6,6 +6,7 @@ class AlertCard extends StatelessWidget {
   final dynamic quantity;
   final dynamic currentPrice;
   final dynamic targetPrice;
+  final dynamic lowerThreshold;
   final VoidCallback onTapDetails;
 
   const AlertCard({
@@ -15,6 +16,7 @@ class AlertCard extends StatelessWidget {
     required this.quantity,
     required this.currentPrice,
     required this.targetPrice,
+    required this.lowerThreshold,
     required this.onTapDetails,
   });
 
@@ -53,7 +55,11 @@ class AlertCard extends StatelessWidget {
                   style: const TextStyle(fontSize: 16),
                 ),
                 Text(
-                  'TARGET PRICE \$${targetPrice?.toStringAsFixed(2) ?? '0.00'}',
+                  'HIGH TARGET \$${targetPrice?.toStringAsFixed(2) ?? '0.00'}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'LOWER TARGET \$${lowerThreshold?.toStringAsFixed(2) ?? '0.00'}',
                   style: const TextStyle(fontSize: 16),
                 ),
               ],
