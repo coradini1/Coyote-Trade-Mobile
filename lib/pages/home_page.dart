@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> deleteAlert(int assetId) async {
-    final url = 'http://192.168.0.8:3002/api/alerts/delete/$assetId';
+    final url = 'http://172.21.8.213:3002/api/alerts/delete/$assetId';
     try {
       final response = await http.delete(
         Uri.parse(url),
@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchAssets() async {
-    const url = 'http://192.168.0.8:3002/api/assets/all';
+    const url = 'http://172.21.8.213:3002/api/assets/all';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage> {
     }
     final assetId = asset['id'];
 
-    const url = 'http://192.168.0.8:3002/api/alerts/update';
+    const url = 'http://172.21.8.213:3002/api/alerts/update';
     try {
       final response = await http.put(
         Uri.parse(url),
@@ -337,7 +337,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchUserData() async {
-    const url = 'http://192.168.0.8:3002/api/user/mobile';
+    const url = 'http://172.21.8.213:3002/api/user/mobile';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -359,7 +359,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchAlerts() async {
-    const url = 'http://192.168.0.8:3002/api/alerts/all';
+    const url = 'http://172.21.8.213:3002/api/alerts/all';
     try {
       final response = await http.get(
         Uri.parse(url),

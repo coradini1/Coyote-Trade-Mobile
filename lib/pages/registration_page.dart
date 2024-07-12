@@ -23,7 +23,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       _isLoading = true;
     });
 
-    const url = 'http://192.168.0.8:3002/api/register';
+    const url = 'http://172.21.8.213:3002/api/register';
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
@@ -36,14 +36,32 @@ class _RegistrationPageState extends State<RegistrationPage> {
         'password': _passwordController.text,
       }),
     );
-
-    if (response.statusCode == 200) {
+    print(response.statusCode);
+    if (response.statusCode == 200 || response.statusCode == 201) {
       Navigator.pushNamed(
         context,
         '/login',
       );
     } else {
-      // Handle error
+      final data = json.decode(response.body);
+      final message = data['message'];
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Registration Failed'),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
 
     setState(() {

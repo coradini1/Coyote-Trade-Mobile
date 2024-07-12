@@ -31,8 +31,9 @@ class _LoginPageState extends State<LoginPage> {
 
     final email = _emailController.text;
     final password = _passwordController.text;
+    print('Email: $email, Password: $password');
 
-    const url = 'http://192.168.0.8:3002/api/login/mobile';
+    const url = 'http://172.21.8.213:3002/api/login/mobile';
 
     try {
       final response = await http.post(

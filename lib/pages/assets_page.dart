@@ -26,7 +26,7 @@ class _AssetsPageState extends State<AssetsPage> {
   }
 
   Future<void> getAssetsData() async {
-    const url = 'http://192.168.0.8:3002/api/assets/all';
+    const url = 'http://172.21.8.213:3002/api/assets/all';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -48,7 +48,7 @@ class _AssetsPageState extends State<AssetsPage> {
   }
 
   Future<void> fetchUserData() async {
-    const url = 'http://192.168.0.8:3002/api/user/mobile';
+    const url = 'http://172.21.8.213:3002/api/user/mobile';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -75,7 +75,7 @@ class _AssetsPageState extends State<AssetsPage> {
 
   Future<void> createAlert(int assetId, String symbol, dynamic targetPrice,
       dynamic lowerThreshold) async {
-    const url = 'http://192.168.0.8:3002/api/alerts/create';
+    const url = 'http://172.21.8.213:3002/api/alerts/create';
     try {
       final response = await http.post(
         Uri.parse(url),
